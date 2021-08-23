@@ -1,0 +1,394 @@
+import pandas as pd
+import geopandas
+import numpy as np
+from statistics import mean
+import math
+
+##load distribution centers and vertiport locations + average hourly demand
+Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
+Vertiports_df = pd.read_csv('Vertiport_locations.csv')
+#clean dataframes
+Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
+Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
+
+df = Vertiports_df
+gdf = geopandas.GeoDataFrame(
+    df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
+
+Vertiports_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
+
+#print(Vertiports_df.head())
+
+
+
+df = Distribution_centers_df
+gdf = geopandas.GeoDataFrame(
+    df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
+
+Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
+
+#print(Distribution_centers_df.head())
+
+
+#print(list(Distribution_centers_df.iloc[0].geometry.coords)[0][0])
+
+
+
+
+#%%
+"""
+Distribution centers Dataframe format:
+Label, x_location, y_location, relative_Dcenter_size, 
+
+Vertiports Dataframe format:
+Label, x_location, y_location, Municipal_demand, relative_vport_size, 
+
+"""
+##input variables (independent variables for schedule)
+#total demand (very high, high, medium, low, very low)
+#rogue aircraft (1%, 3%, 5%, 8%, 10%) this will be added manually after
+#proportion of traffic from Dcenters
+#number of loitering missions and radius
+#upper and lower bounds (1km - 16km)
+
+
+
+
+
+
+#sched_vh_1_1
+
+#making the dcenters have multiple arrival and departure 
+#have all the ports have two seperate for arrival and 
+#lower bound on the lenght of flight
+#change locations Dcenters
+#deactivate surrounding ports from X number of flights's destination points.
+#immunity time
+
+
+
+
+
+
+
+
+
+
+##Fixed variables:
+#proportion of vertiport demand that will come from distribution centers:
+Percentage_Dcenters = 0.95
+Percentage_closest_Dcenters = 0.90
+Number_of_Dcenters_per_vertiport = 4
+timesteps = 3600
+
+
+"""
+
+##Method pseudo code:
+    
+for every vertiport in Vertipors_df:
+    1. Find the four closest Distribution centers and make them very important (increase their priority temporarily).
+    2. Compute the lambda's (demand rates) for vertiports and for distribution centers:
+        - Percentage_Dcenter will come from Distribution centers:
+            * Based on the relative size and distance, divide the lambda across all the distribution centers.
+        - The remaining percentage will come from other vertiports:
+            * Based on the relative size and distance, divide the lambda across all the vertiports. 
+    3. Draw from a poisson process with the previously obtained lambda's in a timeframe of all timesteps.
+    4. Save the labels of the recieving and sending points at every time.
+Based on this create the flight schedule in the requested format.
+        
+
+#general thoughts:
+Distribution centers get 95% of the total lambda at each vertiport
+Closest 4 distribution centers get 90% (of the 95%) of the lambda. The remaining 10% goes the other distribution centers.
+   
+"""
+
+
+
+def dist(x1, y1, x2 , y2):
+    dist = ((x1 - x2)**2 + (y1 - y2)**2) ** 0.5
+    return dist
+
+
+def Distance_distribution_centers(x1, y1):
+    dist_list = []
+    for index, row in Distribution_centers_df.iterrows():
+        x2 = row['x']
+        y2 = row['y']
+        dist_D_center = dist(x1, y1, x2 , y2)
+        dist_list.append(dist_D_center)
+    return dist_list
+
+def Create_distribution_center_priority(Distribution_centers_df, dist_list):
+    relative_size_list = []
+    for index, row in Distribution_centers_df.iterrows():
+        relative_size_d = row['Relative_size']
+        relative_size_list.append(relative_size_d)
+    
+    #find the Index/label of the closest D centers:
+    K = Number_of_Dcenters_per_vertiport
+    four_closest_index = sorted(range(len(dist_list)), key = lambda sub: dist_list[sub])[:K]
+    
+    #increase the relative size of the K-closest D centers:
+    for close_Dcenter in four_closest_index:
+        relative_size_list[close_Dcenter]  = relative_size_list[close_Dcenter] *20    
+    
+    #compute priority
+    priority_list = []
+    dist_percentage_list = []
+    for Dcenter_i in range(len(relative_size_list)):
+        dist_percent = (dist_list[Dcenter_i]/sum(dist_list))
+        dist_percentage_list.append(dist_percent)
+        
+    for Dcenter_i in range(len(relative_size_list)):
+        priority = (relative_size_list[Dcenter_i]/sum(relative_size_list) ) + (dist_percentage_list[Dcenter_i] - mean(dist_percentage_list))
+        priority_list.append(priority)
+    
+    #replace negative values with zero, perhaps reduce the other priorities accordingly in the future.
+    priority_list_Dcenters = [0 if i<0 else i for i in priority_list]
+    return priority_list_Dcenters
+    
+#repeat Create_distribution_center_priority for vertiports.
+def Create_vertiport_priority(Vertiports_df):
+    relative_size_list = []
+    for index, row in Vertiports_df.iterrows():
+        relative_size_d = row['Relative_size']
+        relative_size_list.append(relative_size_d)
+        
+    priority_list_vertiports = []
+    for vertiport in range(len(relative_size_list)):
+        priority_percentage = relative_size_list[vertiport]/sum(relative_size_list)
+        priority_list_vertiports.append(priority_percentage)
+
+    return priority_list_vertiports
+    
+
+   
+def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df):
+    label_recieving_vertiport = 0
+    label_recieving_vertiport2 = 0
+    flight_schedule_unsorted = []
+    for recieving_vertiport in range(len(priority_list_vertiports)):
+        #Retrieve municipal demand
+        Total_demand = Vertiports_df.iloc[recieving_vertiport]['demand']
+        #compute lambda and make initial split
+        Total_lambda = (Total_demand/3600)
+        Total_lambda_vertiports = (1-Percentage_Dcenters) * Total_lambda
+        Total_lambda_Dcenters = Percentage_Dcenters * Total_lambda
+        
+        #recompute the Dcenter priority list
+        x1 = Vertiports_df.iloc[recieving_vertiport]['x']
+        y1 = Vertiports_df.iloc[recieving_vertiport]['y']
+        dist_list = Distance_distribution_centers(x1, y1)
+        priority_list_Dcenters = Create_distribution_center_priority(Distribution_centers_df, dist_list)
+             
+        #Distribute lambda over all vertiports and Dcenters based on their priority lists
+        Lambda_list_vertiports = Total_lambda_vertiports * np.array(priority_list_vertiports)
+        Lambda_list_Dcenters = Total_lambda_Dcenters * np.array(priority_list_Dcenters)
+        
+        #for each entry in the vertiport lambda lists run a poisson process over the timesteps
+        label_sending_vertiport = 0
+        schedule_from_v = []
+        for vertiport_lambda in Lambda_list_vertiports:
+            Traffic_i = np.random.poisson(vertiport_lambda ,timesteps)
+            timestep_index = 0
+            for timestep_traffic in Traffic_i:
+                flight =[]
+                if timestep_traffic == 1:
+                    flight.append(label_recieving_vertiport)
+                    flight.append(label_sending_vertiport)
+                    flight.append(timestep_index)
+                    schedule_from_v.append(flight)
+                timestep_index += 1
+            label_sending_vertiport += 1
+        label_recieving_vertiport += 1
+
+        #for each entry in the Dcenter lambda lists run a poisson process over the timesteps      
+        label_sending_dcenter = 0
+        schedule_from_D = []
+        for dcenter_lambda in Lambda_list_Dcenters:
+            Traffic_i = np.random.poisson(dcenter_lambda ,timesteps)
+            timestep_index = 0
+            for timestep_traffic in Traffic_i:
+                flight =[]
+                if timestep_traffic == 1:
+                    flight.append(label_recieving_vertiport2)
+                    flight.append(label_sending_dcenter)
+                    flight.append(timestep_index)
+                    schedule_from_D.append(flight)
+                timestep_index += 1
+            label_sending_dcenter += 1
+        label_recieving_vertiport2 += 1
+  
+        flight_row_v = []
+        aircraft_id = 0
+        for flight in schedule_from_v:
+            flight_row = []
+            #append time of recieving flight plan: 00:00:00
+            flight_row.append("00:00:00")
+            
+            #append aircraft ID:
+            flight_row.append(aircraft_id)
+            aircraft_id += 1
+            
+            #append aircraft type:
+            flight_row.append("M600")
+            
+            #append flight departure time
+            time_in_seconds = flight[2]
+            whole_minutes = math.floor(time_in_seconds/60)   #make this round down
+            whole_minutes = str(whole_minutes)
+            if len(str(whole_minutes)) == 1:
+                whole_minutes = "0" + str(whole_minutes)
+            seconds_left = time_in_seconds - int(whole_minutes)*60
+            if len(str(seconds_left)) == 1:
+                seconds_left = "0" + str(seconds_left)            
+            flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
+            if len(flight) > 0:
+                #append origin airport location
+                x_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
+                y_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]
+                #x_loc_sending = Vertiports_df.iloc[flight[1]]['x']
+                #y_loc_sending = Vertiports_df.iloc[flight[1]]['y']
+                flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
+
+                #append recieving/destination airport locationn
+                x_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][0]
+                y_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][1]  
+                #x_loc_recieving = Vertiports_df.iloc[flight[0]]['x']
+                #y_loc_recieving = Vertiports_df.iloc[flight[0]]['y']    
+                flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
+            
+            #add priority level (1 for now)
+            flight_row.append(1)
+            flight_row.append(time_in_seconds)
+            flight_row_v.append(flight_row)
+    
+        flight_row_D = []
+        for flight in schedule_from_D:
+            flight_row = []
+            #append time of recieving flight plan: 00:00:00
+            flight_row.append("00:00:00")
+            
+            #append aircraft ID:
+            flight_row.append(aircraft_id)
+            aircraft_id += 1
+            
+            #append aircraft type:
+            flight_row.append("M600")
+            
+            #append flight departure time
+            time_in_seconds = flight[2]
+            whole_minutes = math.floor(time_in_seconds/60)   #make this round down
+            whole_minutes = str(whole_minutes)
+            if len(str(whole_minutes)) == 1:
+                whole_minutes = "0" + str(whole_minutes)
+            seconds_left = time_in_seconds - int(whole_minutes)*60
+            if len(str(seconds_left)) == 1:
+                seconds_left = "0" + str(seconds_left)            
+            flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
+            if len(flight) > 0:
+                #append origin airport location
+                x_loc_sending = list(Distribution_centers_df.iloc[flight[1]].geometry.coords)[0][0]
+                y_loc_sending = list(Distribution_centers_df.iloc[flight[1]].geometry.coords)[0][1]
+                #x_loc_sending = Distribution_centers_df.iloc[flight[1]]['x']
+                #y_loc_sending = Distribution_centers_df.iloc[flight[1]]['y']
+                flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
+
+                #append recieving/destination airport locationn
+                x_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][0]
+                y_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][1]                
+                #x_loc_recieving = Vertiports_df.iloc[flight[0]]['x']
+                #y_loc_recieving = Vertiports_df.iloc[flight[0]]['y']
+                flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
+            
+            #add priority level (1 for now)
+            flight_row.append(1)
+            flight_row.append(time_in_seconds)
+            flight_row_D.append(flight_row)
+
+    
+        for i in flight_row_v:
+            flight_schedule_unsorted.append(i)
+        for i in flight_row_D:
+            flight_schedule_unsorted.append(i)            
+
+
+    #sort the flights and generate the flight schedule:
+    flight_schedule_df = pd.DataFrame.from_records(flight_schedule_unsorted)
+    flight_schedule_df = flight_schedule_df.sort_values(by=[flight_schedule_df.columns[7]])
+    flight_schedule_df = flight_schedule_df.drop(columns = [ flight_schedule_df.columns[7]])
+    flight_schedule_df.to_csv('preliminary_flight_schedule.csv', header = False, index = False)
+    return flight_schedule_df
+    
+
+            
+           
+
+
+priority_list_vertiports = Create_vertiport_priority(Vertiports_df)
+Schedule = Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
