@@ -19,8 +19,6 @@ Vertiports_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
 
 #print(Vertiports_df.head())
 
-
-
 df = Distribution_centers_df
 gdf = geopandas.GeoDataFrame(
     df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
@@ -28,12 +26,7 @@ gdf = geopandas.GeoDataFrame(
 Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
 
 #print(Distribution_centers_df.head())
-
-
 #print(list(Distribution_centers_df.iloc[0].geometry.coords)[0][0])
-
-
-
 
 #%%
 """
@@ -46,33 +39,21 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 """
 ##input variables (independent variables for schedule)
 #total demand (very high, high, medium, low, very low)
-#rogue aircraft (1%, 3%, 5%, 8%, 10%) this will be added manually after
 #proportion of traffic from Dcenters
 #number of loitering missions and radius
 #upper and lower bounds (1km - 16km)
-
-
-
-
-
+#rogue aircraft (1%, 3%, 5%, 8%, 10%) this will be added manually after
 
 #sched_vh_1_1
 
 #making the dcenters have multiple arrival and departure 
-#have all the ports have two seperate for arrival and 
+#have all the ports have two seperate for arrival and departure 
+#or immunity time
+
 #lower bound on the lenght of flight
 #change locations Dcenters
 #deactivate surrounding ports from X number of flights's destination points.
 #immunity time
-
-
-
-
-
-
-
-
-
 
 ##Fixed variables:
 #proportion of vertiport demand that will come from distribution centers:
@@ -80,6 +61,7 @@ Percentage_Dcenters = 0.95
 Percentage_closest_Dcenters = 0.90
 Number_of_Dcenters_per_vertiport = 4
 timesteps = 3600
+N_loitering = 5
 
 
 """
@@ -130,9 +112,16 @@ def Create_distribution_center_priority(Distribution_centers_df, dist_list):
     K = Number_of_Dcenters_per_vertiport
     four_closest_index = sorted(range(len(dist_list)), key = lambda sub: dist_list[sub])[:K]
     
+    priority_sum = 0
+    for Dcenter in range(len(relative_size_list)):
+        priority_sum +=relative_size_list[Dcenter]
+        #print(priority_sum)
+        #17.12042308855761    
+    
     #increase the relative size of the K-closest D centers:
     for close_Dcenter in four_closest_index:
-        relative_size_list[close_Dcenter]  = relative_size_list[close_Dcenter] *20    
+        relative_size_list[close_Dcenter]  = relative_size_list[close_Dcenter] * priority_sum * (Percentage_closest_Dcenters/Number_of_Dcenters_per_vertiport) 
+        #change priority of non closest DCenters
     
     #compute priority
     priority_list = []
