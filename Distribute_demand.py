@@ -122,6 +122,7 @@ def Create_distribution_center_priority(Distribution_centers_df, dist_list):
     for close_Dcenter in four_closest_index:
         relative_size_list[close_Dcenter]  = relative_size_list[close_Dcenter] * priority_sum * (Percentage_closest_Dcenters/Number_of_Dcenters_per_vertiport) 
         #change priority of non closest DCenters
+        #relative_size_list[close_Dcenter]  = relative_size_list[close_Dcenter] * priority_sum * ((1-Percentage_closest_Dcenters)/Number_of_Dcenters_per_vertiport) 
     
     #compute priority
     priority_list = []
