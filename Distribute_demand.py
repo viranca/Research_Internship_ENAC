@@ -39,27 +39,35 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 """
 ##input variables (independent variables for schedule)
 #total demand (very high, high, medium, low, very low)
-#proportion of traffic from Dcenters
-#number of loitering missions and radius
-#upper and lower bounds (1km - 16km)
-#rogue aircraft (1%, 3%, 5%, 8%, 10%) this will be added manually after
+#proportion of traffic from Dcenters (30, 50, 80)
+#number of loitering missions and radius 
 
-#sched_vh_1_1
-
+##to be implemented
 #making the dcenters have multiple arrival and departure 
 #have all the ports have two seperate for arrival and departure 
-#or immunity time
-
-#lower bound on the lenght of flight
 #change locations Dcenters
 #deactivate surrounding ports from X number of flights's destination points.
-#immunity time
+
+
+##To be implemented2
+#Change locations Dcenters
+#For all Dcenters and Vports compute the necesarry arrival and departure points regarding a 10 second time gap
+#Distribute the planned flights over the required number of closest midpoints
+
+##loitering mission
+#deactivate surrounding ports from X number of flights's destination points.
+#input
+#Polygons, start time, end time
+
+
+#upper and lower bounds (1km - 16km) #not logical
+#rogue aircraft (1%, 3%, 5%, 8%, 10%) #this will be added manually after
 
 ##Fixed variables:
 #proportion of vertiport demand that will come from distribution centers:
-Percentage_Dcenters = 0.95
-Percentage_closest_Dcenters = 0.90
-Number_of_Dcenters_per_vertiport = 4
+Percentage_Dcenters = 0.85
+Percentage_closest_Dcenters = 0.80
+Number_of_Dcenters_per_vertiport = 5
 timesteps = 3600
 N_loitering = 5
 
@@ -159,6 +167,8 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
     label_recieving_vertiport = 0
     label_recieving_vertiport2 = 0
     flight_schedule_unsorted = []
+    schedule_from_v_total = []
+    schedule_from_D_total = []
     for recieving_vertiport in range(len(priority_list_vertiports)):
         #Retrieve municipal demand
         Total_demand = Vertiports_df.iloc[recieving_vertiport]['demand']
@@ -190,6 +200,11 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                     flight.append(label_sending_vertiport)
                     flight.append(timestep_index)
                     schedule_from_v.append(flight)
+                    flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][0])
+                    flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][1])
+                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][0])
+                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][1])                    
+                    schedule_from_v_total.append(flight)
                 timestep_index += 1
             label_sending_vertiport += 1
         label_recieving_vertiport += 1
@@ -207,10 +222,16 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                     flight.append(label_sending_dcenter)
                     flight.append(timestep_index)
                     schedule_from_D.append(flight)
+                    flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][0])
+                    flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][1])
+                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][0])
+                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][1])
+                    schedule_from_D_total.append(flight)
                 timestep_index += 1
             label_sending_dcenter += 1
         label_recieving_vertiport2 += 1
-  
+        
+        
         flight_row_v = []
         aircraft_id = 0
         for flight in schedule_from_v:
@@ -309,7 +330,12 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
     flight_schedule_df = pd.DataFrame.from_records(flight_schedule_unsorted)
     flight_schedule_df = flight_schedule_df.sort_values(by=[flight_schedule_df.columns[7]])
     flight_schedule_df = flight_schedule_df.drop(columns = [ flight_schedule_df.columns[7]])
-    flight_schedule_df.to_csv('preliminary_flight_schedule.csv', header = False, index = False)
+    flight_schedule_df.to_csv('original_vertiports_flight_schedule.csv', header = False, index = False)
+    
+    df = pd.DataFrame(schedule_from_D_total) 
+    df.to_csv('schedule_from_D_total.csv', header = False) 
+    df = pd.DataFrame(schedule_from_v_total) 
+    df.to_csv('schedule_from_v_total.csv', header = False)     
     return flight_schedule_df
     
 
