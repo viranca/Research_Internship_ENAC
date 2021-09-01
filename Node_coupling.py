@@ -8,6 +8,10 @@ time_gap = 10 #seconds
 """
 Pseudocode node coupling:
 For all Dcenters and Vports compute the necesarry arrival and departure points regarding a 10 second time gap
+ - iterate through the intention and see if the 10 seconds is breached
+ - if so add a node 
+ - iterate through the intention again and see if the 10 seconds is breached with 2 nodes
+ - continue until no breach
 Couple the new nodes to the vertiports and dcenters
 Distribute the planned flights over the these nodes
 """
@@ -30,8 +34,10 @@ nodes_df = pd.DataFrame.from_records(nodes)
 
 print(schedule_from_v_total_df)
 
-for index, row in schedule_from_v_total_df.iterrows():
-    print(row)
+for index, row in schedule_from_v_total_df.iterrows(): 
+    #index, recieving vertiport, sending vertiport, x_sen, y_sen, x_rec, y_rec
+    a = 0
+    #print(row)
 
 
 
@@ -46,7 +52,7 @@ for index, row in schedule_from_v_total_df.iterrows():
 
 
 
-
+#%%
 
 #create flight schedule with nodes
 flight_row_v = []
