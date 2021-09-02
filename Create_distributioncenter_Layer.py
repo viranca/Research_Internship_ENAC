@@ -32,7 +32,12 @@ df = pd.DataFrame(
      'Relative_size': [np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
                        np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
                        np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
-                       np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30)]})
+                       np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30)],
+          
+     'Number_of_ports': [3, 3, 3, 3,
+                       3, 3, 3, 3,
+                       3, 3, 3, 3,
+                       3, 3, 3, 3]})
 
 
 
