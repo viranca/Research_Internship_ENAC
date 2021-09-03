@@ -1,5 +1,5 @@
 import pandas as pd
-import geopandas 
+import geopandas
 import numpy as np
 from statistics import mean
 import math
@@ -18,7 +18,7 @@ gdf = geopandas.GeoDataFrame(
 
 Vertiports_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
 
-print(Vertiports_df.head())
+#print(Vertiports_df.head())
 
 df = Distribution_centers_df
 gdf = geopandas.GeoDataFrame(
@@ -30,7 +30,7 @@ Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
 #print(list(Distribution_centers_df.iloc[0].geometry.coords)[0][0])
 
 #retrieve midway points:
-nodes_df = geopandas.read_file("center_points.gpkg")
+nodes_df = gpd.read_file("center_points.gpkg")
 nodes = []
 for index, row in nodes_df.iterrows():
     nodes.append((list(row.geometry.coords)[0]))
@@ -76,7 +76,7 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 Percentage_Dcenters = 0.85
 Percentage_closest_Dcenters = 0.80
 Number_of_Dcenters_per_vertiport = 5
-timesteps = 3 #3600
+timesteps = 3
 N_loitering = 5
 
 
@@ -265,17 +265,14 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                 seconds_left = "0" + str(seconds_left)            
             flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
             if len(flight) > 0:
-                #port location:
-                x_loc_sending_port = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
-                y_loc_sending_port = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]                
-                
                 #find closest node to port location
-
-
+                tree = spatial.KDTree(nodes)
+                index_closest = tree.query([16.413526360203182, 48.179141106442856])[1]
                 #append origin node location
-                x_loc_sending = nodes[index_closest][0]
-                y_loc_sending = nodes[index_closest][1]
-                
+                x_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
+                y_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]
+                #x_loc_sending = Vertiports_df.iloc[flight[1]]['x']
+                #y_loc_sending = Vertiports_df.iloc[flight[1]]['y']
                 flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
                 
                 #find closest node to port location

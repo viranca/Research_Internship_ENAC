@@ -1,7 +1,6 @@
 import pandas as pd
 import geopandas as gpd
-
-
+from scipy import spatial
 
 time_gap = 10 #seconds
 
@@ -25,30 +24,20 @@ nodes_df = gpd.read_file("center_points.gpkg")
 nodes = []
 for index, row in nodes_df.iterrows():
     nodes.append((list(row.geometry.coords)[0]))
-nodes_df = pd.DataFrame.from_records(nodes)    
-
-    
 
 
 
-
-print(schedule_from_v_total_df)
-
-for index, row in schedule_from_v_total_df.iterrows(): 
-    #index, recieving vertiport, sending vertiport, x_sen, y_sen, x_rec, y_rec
-    a = 0
-    #print(row)
+tree = spatial.KDTree(nodes)
+index_closest = tree.query([16.413526360203182, 48.179141106442856])[1]
+print(nodes[index_closest][0])
 
 
 
+nodes.pop(index_closest)
 
-
-
-
-
-
-
-
+tree = spatial.KDTree(nodes)
+index_closest = tree.query([16.413526360203182, 48.179141106442856])[1]
+print(nodes[index_closest][0])
 
 
 
