@@ -11,15 +11,7 @@ Vertiports_df = pd.read_csv('Vertiport_locations.csv')
 
 Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
 Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
-#%%
-#print(Distribution_centers_df.head())
-#print(Vertiports_df.head())
 
-x_loc_sending = Distribution_centers_df.iloc[0]['node_x_send']
-print(x_loc_sending)
-
-                
-                
 #%%
 """
 Distribution centers Dataframe format:
@@ -47,7 +39,7 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 Percentage_Dcenters = 0.85
 Percentage_closest_Dcenters = 0.80
 Number_of_Dcenters_per_vertiport = 5
-timesteps = 3 #3600
+timesteps = 3600 #3600
 N_loitering = 5
 
 
@@ -176,12 +168,12 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                     flight.append(label_recieving_vertiport)
                     flight.append(label_sending_vertiport)
                     flight.append(timestep_index)
-                    schedule_from_v.append(flight)
-                    flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][0])
-                    flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][1])
-                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][0])
-                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][1])                    
-                    schedule_from_v_total.append(flight)
+                    #schedule_from_v.append(flight)
+                    #flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][0])
+                    #flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][1])
+                    #flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][0])
+                    #flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][1])                    
+                    #schedule_from_v_total.append(flight)
                 timestep_index += 1
             label_sending_vertiport += 1
         label_recieving_vertiport += 1
@@ -199,11 +191,11 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                     flight.append(label_sending_dcenter)
                     flight.append(timestep_index)
                     schedule_from_D.append(flight)
-                    flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][0])
-                    flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][1])
-                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][0])
-                    flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][1])
-                    schedule_from_D_total.append(flight)
+                    #flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][0])
+                    #flight.append(list(Distribution_centers_df.iloc[label_sending_dcenter].geometry.coords)[0][1])
+                    #flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][0])
+                    #flight.append(list(Vertiports_df.iloc[label_recieving_vertiport2].geometry.coords)[0][1])
+                    #schedule_from_D_total.append(flight)
                 timestep_index += 1
             label_sending_dcenter += 1
         label_recieving_vertiport2 += 1
@@ -263,7 +255,9 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
             flight_row_v.append(flight_row)
     
         flight_row_D = []
+        port_selector = 0
         for flight in schedule_from_D:
+            
             flight_row = []
             #append time of recieving flight plan: 00:00:00
             flight_row.append("00:00:00")
@@ -287,10 +281,18 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
             flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
             if len(flight) > 0:
                 #append origin airport location
-                x_loc_sending = list(Distribution_centers_df.iloc[flight[1]].geometry.coords)[0][0]
-                y_loc_sending = list(Distribution_centers_df.iloc[flight[1]].geometry.coords)[0][1]
-                #x_loc_sending = Distribution_centers_df.iloc[flight[1]]['x']
-                #y_loc_sending = Distribution_centers_df.iloc[flight[1]]['y']
+                if port_selector == 0:
+                    x_loc_sending = Distribution_centers_df.iloc[0]['node_x_send_1']
+                    y_loc_sending = Distribution_centers_df.iloc[0]['node_y_send_1']
+                    port_selector += 1
+                elif port_selector == 1:
+                    x_loc_sending = Distribution_centers_df.iloc[0]['node_x_send_2']
+                    y_loc_sending = Distribution_centers_df.iloc[0]['node_y_send_2']
+                    port_selector += 1
+                else:
+                    x_loc_sending = Distribution_centers_df.iloc[0]['node_x_send_3']
+                    y_loc_sending = Distribution_centers_df.iloc[0]['node_y_send_3']
+                    port_selector = 0                   
                 flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
 
                 #append recieving/destination airport locationn
@@ -318,10 +320,10 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
     flight_schedule_df = flight_schedule_df.drop(columns = [ flight_schedule_df.columns[7]])
     flight_schedule_df.to_csv('original_vertiports_flight_schedule.csv', header = False, index = False)
     
-    df = pd.DataFrame(schedule_from_D_total) 
-    df.to_csv('schedule_from_D_total.csv', header = False) 
-    df = pd.DataFrame(schedule_from_v_total) 
-    df.to_csv('schedule_from_v_total.csv', header = False)     
+    #df = pd.DataFrame(schedule_from_D_total) 
+    #df.to_csv('schedule_from_D_total.csv', header = False) 
+    #df = pd.DataFrame(schedule_from_v_total) 
+    #df.to_csv('schedule_from_v_total.csv', header = False)     
     return flight_schedule_df
     
 
