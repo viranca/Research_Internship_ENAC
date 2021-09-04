@@ -3,7 +3,7 @@ import geopandas
 import numpy as np
 from statistics import mean
 import math
-from scipy import spatial
+
 
 ##load distribution centers and vertiport locations + average hourly demand
 Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
@@ -266,15 +266,16 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
             flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
             if len(flight) > 0:
                 #port location:
-                x_loc_sending_port = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
-                y_loc_sending_port = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]                
+                x_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
+                y_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]                
                 
                 #find closest node to port location
-
+                #tree = spatial.KDTree(nodes)
+                #index_closest = tree.query(x_loc_sending_port, y_loc_sending_port)[1]
 
                 #append origin node location
-                x_loc_sending = nodes[index_closest][0]
-                y_loc_sending = nodes[index_closest][1]
+                #x_loc_sending = nodes[index_closest][0]
+                #y_loc_sending = nodes[index_closest][1]
                 
                 flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
                 
