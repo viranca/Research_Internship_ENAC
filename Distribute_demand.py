@@ -11,9 +11,15 @@ Vertiports_df = pd.read_csv('Vertiport_locations.csv')
 
 Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
 Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
+#%%
+#print(Distribution_centers_df.head())
+#print(Vertiports_df.head())
 
-print(Distribution_centers_df.head())
-print(Vertiports_df.head())
+x_loc_sending = Distribution_centers_df.iloc[0]['node_x_send']
+print(x_loc_sending)
+
+                
+                
 #%%
 """
 Distribution centers Dataframe format:
@@ -229,8 +235,8 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
             flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
             if len(flight) > 0:
                 #port location:
-                x_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][0]
-                y_loc_sending = list(Vertiports_df.iloc[flight[1]].geometry.coords)[0][1]                
+                x_loc_sending = Vertiports_df.iloc[flight[1]]['node_x_send'] 
+                y_loc_sending = Vertiports_df.iloc[flight[1]]['node_y_send']              
                 
                 #find closest node to port location
                 #tree = spatial.KDTree(nodes)
@@ -245,8 +251,8 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                 #find closest node to port location
                 
                 #append recieving/destination airport locationn
-                x_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][0]
-                y_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][1]  
+                x_loc_sending = Vertiports_df.iloc[flight[0]]['node_x_recieve'] 
+                y_loc_sending = Vertiports_df.iloc[flight[0]]['node_y_recieve']                 
                 #x_loc_recieving = Vertiports_df.iloc[flight[0]]['x']
                 #y_loc_recieving = Vertiports_df.iloc[flight[0]]['y']    
                 flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
@@ -288,8 +294,8 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                 flight_row.append('(' + str(x_loc_sending) + ', ' + str(y_loc_sending) + ')')
 
                 #append recieving/destination airport locationn
-                x_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][0]
-                y_loc_recieving = list(Vertiports_df.iloc[flight[0]].geometry.coords)[0][1]                
+                x_loc_recieving = Vertiports_df.iloc[flight[0]]['node_x_recieve'] 
+                y_loc_recieving = Vertiports_df.iloc[flight[0]]['node_y_recieve']                
                 #x_loc_recieving = Vertiports_df.iloc[flight[0]]['x']
                 #y_loc_recieving = Vertiports_df.iloc[flight[0]]['y']
                 flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
