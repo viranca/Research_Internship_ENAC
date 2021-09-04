@@ -15,8 +15,6 @@ for index, row in nodes_df.iterrows():
 ##load distribution centers and vertiport locations + average hourly demand
 Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
 Vertiports_df = pd.read_csv('Vertiport_locations.csv')
-Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
-Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
 df = Vertiports_df
 gdf = geopandas.GeoDataFrame(
     df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
@@ -26,6 +24,7 @@ df = Distribution_centers_df
 gdf = geopandas.GeoDataFrame(
     df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
 Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
+
 
 #constrained airspace polygon
 constrained_airspace_df = pd.read_csv("constrained_airspace.csv")
@@ -42,7 +41,6 @@ for corner in constrained_airspace_df:
 #print(Corner_list)    
 constrained_airspace_polygon = Polygon(Corner_list)
 #constrained_airspace_polygon_list = list(constrained_airspace_polygon)
-
 
 
 #retrieve midway points:
@@ -68,7 +66,6 @@ for index, row in Distribution_centers_df.iterrows():
     x = row['x']
     y = row['y']
     if constrained_airspace_polygon.contains(Point(x,y)):
-        print("yes")    
         tree = spatial.KDTree(nodes)
         index_closest = tree.query([x_port, y_port])[1]
         x_node_send_1 = nodes[index_closest][0]
@@ -97,15 +94,13 @@ for index, row in Distribution_centers_df.iterrows():
         Dcenter_nodelist_y_send_2.append(y_port)
         Dcenter_nodelist_x_send_3.append(x_port + 0.00045)
         Dcenter_nodelist_y_send_3.append(y_port)       
-
-#print(Distribution_centers_df)
 Distribution_centers_df['node_x_send_1'] = Dcenter_nodelist_x_send_1
 Distribution_centers_df['node_y_send_1'] = Dcenter_nodelist_y_send_1
 Distribution_centers_df['node_x_send_2'] = Dcenter_nodelist_x_send_2
 Distribution_centers_df['node_y_send_2'] = Dcenter_nodelist_y_send_2
 Distribution_centers_df['node_x_send_3'] = Dcenter_nodelist_x_send_3
 Distribution_centers_df['node_y_send_3'] = Dcenter_nodelist_y_send_3
-#print(Distribution_centers_df)
+Distribution_centers_df.to_csv('Distribution_centers_locations.csv')
 
 
 #append nodes to vertiports:
@@ -143,6 +138,7 @@ Vertiports_df['node_x_send'] = vertiport_nodelist_x_send
 Vertiports_df['node_y_send'] = vertiport_nodelist_y_send
 Vertiports_df['node_x_recieve'] = vertiport_nodelist_x_recieve
 Vertiports_df['node_y_recieve'] = vertiport_nodelist_y_recieve
+Vertiports_df.to_csv('Vertiport_locations.csv')
 
 
 

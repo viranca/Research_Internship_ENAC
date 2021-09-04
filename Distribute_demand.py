@@ -8,38 +8,16 @@ import math
 ##load distribution centers and vertiport locations + average hourly demand
 Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
 Vertiports_df = pd.read_csv('Vertiport_locations.csv')
-#clean dataframes
+
 Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
 Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
 
-df = Vertiports_df
-gdf = geopandas.GeoDataFrame(
-    df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
-
-Vertiports_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
-
+print(Distribution_centers_df.head())
 print(Vertiports_df.head())
-
-df = Distribution_centers_df
-gdf = geopandas.GeoDataFrame(
-    df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
-
-Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
-
-#print(Distribution_centers_df.head())
-#print(list(Distribution_centers_df.iloc[0].geometry.coords)[0][0])
-
-#retrieve midway points:
-nodes_df = geopandas.read_file("center_points.gpkg")
-nodes = []
-for index, row in nodes_df.iterrows():
-    nodes.append((list(row.geometry.coords)[0]))
-nodes_df = pd.DataFrame.from_records(nodes)   
-
 #%%
 """
 Distribution centers Dataframe format:
-Label, x_location, y_location, relative_Dcenter_size, 
+,Unnamed: 0,x,y,Relative_size,Number_of_ports,geometry,node_x_send_1,node_y_send_1,node_x_send_2,node_y_send_2,node_x_send_3,node_y_send_3
 
 Vertiports Dataframe format:
 Label, x_location, y_location, Municipal_demand, relative_vport_size, 
@@ -50,23 +28,10 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 #proportion of traffic from Dcenters (30, 50, 80)
 #number of loitering missions and radius 
 
-##to be implemented
-#making the dcenters have multiple arrival and departure 
-#have all the ports have two seperate for arrival and departure 
-#change locations Dcenters
-#deactivate surrounding ports from X number of flights's destination points.
-
-
-##To be implemented2
-#Change locations Dcenters
-#For all Dcenters and Vports compute the necesarry arrival and departure points regarding a 10 second time gap
-#Distribute the planned flights over the required number of closest midpoints
-
 ##loitering mission
 #deactivate surrounding ports from X number of flights's destination points.
 #input
 #Polygons, start time, end time
-
 
 #upper and lower bounds (1km - 16km) #not logical
 #rogue aircraft (1%, 3%, 5%, 8%, 10%) #this will be added manually after
@@ -81,7 +46,6 @@ N_loitering = 5
 
 
 """
-
 ##Method pseudo code:
     
 for every vertiport in Vertipors_df:
@@ -101,7 +65,6 @@ Distribution centers get 95% of the total lambda at each vertiport
 Closest 4 distribution centers get 90% (of the 95%) of the lambda. The remaining 10% goes the other distribution centers.
    
 """
-
 
 
 def dist(x1, y1, x2 , y2):
@@ -356,72 +319,7 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
     return flight_schedule_df
     
 
-            
-           
-
-
 priority_list_vertiports = Create_vertiport_priority(Vertiports_df)
 Schedule = Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
