@@ -98,7 +98,7 @@ for flight in selected_flights:
 #start_time, end_time, x_min, x_max, y_min, y_max
     
 #%%    
-#find flights to remove from intention
+#find departing flights to remove from intention
 to_be_removed = []
 for loiter_mission in loiter_missions:
     for index, row in flightintention_df.iterrows():
@@ -107,6 +107,10 @@ for loiter_mission in loiter_missions:
                 if float(row[4][1]) >= loiter_mission[4] and float(row[4][1]) <= loiter_mission[5]:
                     to_be_removed.append(index)
                     
+#find arriving flights to remove from intention   
+
+
+                 
 print(len(to_be_removed))
 
 
