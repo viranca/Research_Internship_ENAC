@@ -27,7 +27,7 @@ Loitering mission pseudocode:
 selected_flight_labels = [12, 44, 512]
 negative_time_margin = 120 #seconds
 positive_time_margin = 720 #seconds
-loiter_area_side = 500 #meter: square 500 by 500 meter
+loiter_area_side = 1500 #meter: square 500 by 500 meter
 
 
 
@@ -94,7 +94,7 @@ for flight in selected_flights:
     loiter_mission.append(y_min)
     loiter_mission.append(y_max)   
     loiter_missions.append(loiter_mission)
-print(loiter_missions)
+#print(loiter_missions)
 #start_time, end_time, x_min, x_max, y_min, y_max
     
 #%%    
@@ -102,12 +102,12 @@ print(loiter_missions)
 to_be_removed = []
 for loiter_mission in loiter_missions:
     for index, row in flightintention_df.iterrows():
-        if row[3] >= float(loiter_mission[0]) and row[3] <= float(loiter_mission[1]):
-            if float(row[4][0]) >= float(loiter_mission[2]) and float(row[4][0]) <= float(loiter_mission[3]):
-                if float(row[4][1]) >= float(loiter_mission[2]) and float(row[4][1]) <= float(loiter_mission[3]):
+        if row[3] >= loiter_mission[0] and row[3] <= float(loiter_mission[1]):
+            if float(row[4][0]) >= loiter_mission[2] and float(row[4][0]) <= loiter_mission[3]:
+                if float(row[4][1]) >= loiter_mission[4] and float(row[4][1]) <= loiter_mission[5]:
                     to_be_removed.append(index)
                     
-print(to_be_removed)
+print(len(to_be_removed))
 
 
 
