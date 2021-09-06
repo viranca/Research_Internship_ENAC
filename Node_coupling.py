@@ -49,7 +49,7 @@ nodes = []
 for index, row in nodes_df.iterrows():
     nodes.append((list(row.geometry.coords)[0]))
 nodes_df = pd.DataFrame.from_records(nodes)   
-
+nodes_df.to_csv('Nodes_center_points.csv', header = False)
 
 #%%
 #append nodes to distribution centers:
@@ -90,9 +90,9 @@ for index, row in Distribution_centers_df.iterrows():
     else:
         Dcenter_nodelist_x_send_1.append(x_port)
         Dcenter_nodelist_y_send_1.append(y_port)
-        Dcenter_nodelist_x_send_2.append(x_port - 0.00045)
+        Dcenter_nodelist_x_send_2.append(x_port - 0.000450000000)
         Dcenter_nodelist_y_send_2.append(y_port)
-        Dcenter_nodelist_x_send_3.append(x_port + 0.00045)
+        Dcenter_nodelist_x_send_3.append(x_port + 0.000450000000)
         Dcenter_nodelist_y_send_3.append(y_port)       
 Distribution_centers_df['node_x_send_1'] = Dcenter_nodelist_x_send_1
 Distribution_centers_df['node_y_send_1'] = Dcenter_nodelist_y_send_1
@@ -132,7 +132,7 @@ for index, row in Vertiports_df.iterrows():
     else:
         vertiport_nodelist_x_send.append(x_port)
         vertiport_nodelist_y_send.append(y_port)
-        vertiport_nodelist_x_recieve.append(x_port - 0.00045)
+        vertiport_nodelist_x_recieve.append(x_port - 0.000450000000)
         vertiport_nodelist_y_recieve.append(y_port)
 Vertiports_df['node_x_send'] = vertiport_nodelist_x_send
 Vertiports_df['node_y_send'] = vertiport_nodelist_y_send
