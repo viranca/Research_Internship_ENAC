@@ -29,10 +29,10 @@ df = pd.DataFrame(
                    5341430.64420210011303425, 5337309.34168784320354462, 5334249.60747597180306911, 5338898.89520060829818249, 5346301.95066336076706648,
                    5345168.55262735765427351],
      
-     'Relative_size': [np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
-                       np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
-                       np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30),
-                       np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30), np.random.normal(1, 0.30)],
+     'Relative_size': [np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10),
+                       np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10),
+                       np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10),
+                       np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10), np.random.normal(1, 0.10)],
           
      'Number_of_ports': [3, 3, 3, 3,
                        3, 3, 3, 3,

@@ -2,6 +2,7 @@ import geopandas
 import pandas as pd
 import re
 import numpy as np
+from random import randrange
 
 """
 Loitering mission pseudocode:
@@ -27,7 +28,7 @@ Loitering mission pseudocode:
 selected_flight_labels = [12, 44, 512]
 negative_time_margin = 120 #seconds
 positive_time_margin = 720 #seconds
-loiter_area_side = 1500 #meter: square 500 by 500 meter
+loiter_area_side = 500 #meter: square 500 by 500 meter
 
 
 
@@ -36,6 +37,7 @@ flightintention_df = pd.read_csv('Initial_flight_intention.csv')
 def dist(x1, y1, x2 , y2):
     dist = ((x1 - x2)**2 + (y1 - y2)**2) ** 0.5
     return dist
+
 
 #retrieve flight info
 selected_flights = []
@@ -96,41 +98,62 @@ for flight in selected_flights:
     loiter_missions.append(loiter_mission)
 #print(loiter_missions)
 #start_time, end_time, x_min, x_max, y_min, y_max
-    
-#%%    
+
+
 #find departing flights to remove from intention
 to_be_removed = []
+to_be_removed_departing_index = []
+to_be_removed_departing = []
 for loiter_mission in loiter_missions:
     for index, row in flightintention_df.iterrows():
         if row[3] >= loiter_mission[0] and row[3] <= float(loiter_mission[1]):
             if float(row[4][0]) >= loiter_mission[2] and float(row[4][0]) <= loiter_mission[3]:
                 if float(row[4][1]) >= loiter_mission[4] and float(row[4][1]) <= loiter_mission[5]:
+                    to_be_removed_departing_index.append(index)
+                    flight = []
+                    for datapoint in row:
+                        flight.append(datapoint)
+                    to_be_removed_departing.append(flight)
                     to_be_removed.append(index)
                     
 #find arriving flights to remove from intention   
+to_be_removed_arriving_index = []
+to_be_removed_arriving = []
+for loiter_mission in loiter_missions:
+    for index, row in flightintention_df.iterrows():
+        if row[3] >= loiter_mission[0] and row[3] <= float(loiter_mission[1]):
+            if float(row[5][0]) >= loiter_mission[2] and float(row[5][0]) <= loiter_mission[3]:
+                if float(row[5][1]) >= loiter_mission[4] and float(row[5][1]) <= loiter_mission[5]:
+                    to_be_removed_arriving_index.append(index)
+                    flight = []
+                    for datapoint in row:
+                        flight.append(datapoint)
+                    to_be_removed_arriving.append(flight)
+                    to_be_removed.append(index)
+                    
+
+flightintention_loiter_df = flightintention_df.drop(to_be_removed, axis = 0)
+for index, row in flightintention_df.iterrows():
+    flightintention_df.iat[index, 4] = '(' + str(flightintention_df.iloc[index, 4])[1:-1].replace("'", "") + ')'
+    flightintention_df.iat[index, 5] = '(' + str(flightintention_df.iloc[index, 5])[1:-1].replace("'", "") + ')'
+    if index in to_be_removed_departing_index:
+        random_loc_selector = randrange(0, len(flightintention_loiter_df))
+        new_loc = '(' + str(flightintention_loiter_df.iloc[random_loc_selector, 4])[1:-1].replace("'", "") + ')'
+        flightintention_df.iat[index, 4] = new_loc
+    if index in to_be_removed_arriving_index:
+        random_loc_selector = randrange(0, len(flightintention_loiter_df))
+        new_loc = '(' + str(flightintention_loiter_df.iloc[random_loc_selector, 5])[1:-1].replace("'", "") + ')'
+        flightintention_df.iat[index, 5] = new_loc
 
 
-                 
-print(len(to_be_removed))
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#%%
+#print(flightintention_df)
+flightintention_df.to_csv('Flight_intention_loiter.csv', header = False, index = False)
 
 
 
