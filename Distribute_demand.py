@@ -26,12 +26,6 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 #proportion of traffic from Dcenters (30, 50, 80)
 #number of loitering missions and radius 
 
-##loitering mission
-#deactivate surrounding ports from X number of flights's destination points.
-#input
-#Polygons, start time, end time
-
-#upper and lower bounds (1km - 16km) #not logical
 #rogue aircraft (1%, 3%, 5%, 8%, 10%) #this will be added manually after
 
 ##Fixed variables:
@@ -57,11 +51,6 @@ for every vertiport in Vertipors_df:
     4. Save the labels of the recieving and sending points at every time.
 Based on this create the flight schedule in the requested format.
         
-
-#general thoughts:
-Distribution centers get 95% of the total lambda at each vertiport
-Closest 4 distribution centers get 90% (of the 95%) of the lambda. The remaining 10% goes the other distribution centers.
-   
 """
 
 
