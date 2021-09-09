@@ -25,10 +25,10 @@ Loitering mission pseudocode:
 """
 
 #input
-selected_flight_labels = [12, 44, 512]
+selected_flight_labels = [6118,44, 21]
 negative_time_margin = 120 #seconds
 positive_time_margin = 720 #seconds
-loiter_area_side = 500 #meter: square 500 by 500 meter
+loiter_area_side = 1500 #meter: square 500 by 500 meter
 
 
 
@@ -146,25 +146,56 @@ for index, row in flightintention_df.iterrows():
         flightintention_df.iat[index, 5] = new_loc
 
 
-
-
-
-
-
-#%%
 #print(flightintention_df)
 flightintention_df.to_csv('Flight_intention_loiter.csv', header = False, index = False)
 
+"""
+#Create used nodes geopackage for sending and recieving ports seperately
+sending_nodes = []
+recieving_nodes = []
+for index, row in flightintention_df.iterrows():
+    sending_nodes.append(row[4])
+    recieving_nodes.append(row[5])
 
+sending_nodes = list(set(sending_nodes))
+recieving_nodes = list(set(recieving_nodes))
 
+sending_nodes_float = []
+for i in sending_nodes:
+    sending_nodes_float.append(re.findall("\d+\.\d+",i))
+recieving_nodes_float = []
+for i in recieving_nodes:
+    recieving_nodes_float.append(re.findall("\d+\.\d+",i))   
+#print(sending_nodes_float, recieving_nodes_float)
+    
+sending_nodes_float_x = []
+sending_nodes_float_y = []
+for i in sending_nodes_float:
+    sending_nodes_float_x.append(i[0])
+    sending_nodes_float_y.append(i[1])
 
+recieving_nodes_float_x = []
+recieving_nodes_float_y = []
+for i in recieving_nodes_float:
+    recieving_nodes_float_x.append(i[0])
+    recieving_nodes_float_y.append(i[1])
 
+df = pd.DataFrame(
+    {'x_send': sending_nodes_float_x,
+     'y_send': sending_nodes_float_y})
+gdf = geopandas.GeoDataFrame(
+    df, geometry=geopandas.points_from_xy(df.x_send, df.y_send), crs = 'EPSG:4326')
+gdf.to_crs(crs = 'EPSG:32633', inplace = True)
+gdf.to_file("Sending_nodes.gpkg", layer='Sending_nodes', driver="GPKG")
 
-
-
-
-
-
+df = pd.DataFrame(
+    {'x_rec': recieving_nodes_float_x,
+     'y_rec': recieving_nodes_float_y})
+gdf = geopandas.GeoDataFrame(
+    df, geometry=geopandas.points_from_xy(df.x_rec, df.y_rec), crs = 'EPSG:4326')
+gdf.to_crs(crs = 'EPSG:32633', inplace = True)
+gdf.to_file("Recieving_nodes.gpkg", layer='Recieving_nodes', driver="GPKG")
+"""
 
 
 

@@ -324,3 +324,7 @@ priority_list_vertiports = Create_vertiport_priority(Vertiports_df)
 Schedule = Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df)
 
 
+
+
+
+
