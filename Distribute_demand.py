@@ -253,7 +253,15 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
             flight_row = []
             #append time of recieving flight plan: 00:00:00
             flight_row.append("00:00:00")
-            
+            time_in_seconds = (flight[2] - 60)
+            whole_minutes = math.floor(time_in_seconds/60)   #make this round down
+            whole_minutes = str(whole_minutes)
+            if len(str(whole_minutes)) == 1:
+                whole_minutes = "0" + str(whole_minutes)
+            seconds_left = time_in_seconds - int(whole_minutes)*60
+            if len(str(seconds_left)) == 1:
+                seconds_left = "0" + str(seconds_left)            
+            flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))            
             #append aircraft ID:
             flight_row.append(aircraft_id)
             aircraft_id += 1

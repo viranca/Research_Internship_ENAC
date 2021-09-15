@@ -14,8 +14,8 @@
     #2. Equal proportion
 #Priority (perhaps based on distance) (higher is more important)
     #1. 3 Levels and a 4th for emergency flights 
-    #food local deliveries more important
-    # loitering more important
+    #   food local deliveries more important
+    #   loitering more important
     #2. Equal proportion
 #loitering:
     #1. Needs to be destined in constrained airpsace
@@ -25,6 +25,11 @@
 
 
 
+
+
+list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
+list_of_Dcenter_proportions = ['30', '40', '50', '60', '70']
+Number_of_loitering_missions = [0, 3, 6, 9, 12]
 
 
 
