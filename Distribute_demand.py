@@ -29,12 +29,11 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 #rogue aircraft (1%, 3%, 5%, 8%, 10%) #this will be added manually after
 
 ##Fixed variables:
-#proportion of vertiport demand that will come from distribution centers:
-Percentage_Dcenters = 0.85
-Percentage_closest_Dcenters = 0.80
-Number_of_Dcenters_per_vertiport = 5
-timesteps = 3600 #3600
-
+Percentage_Dcenters = 0.85              #proportion of vertiport demand that will come from distribution centers:
+Percentage_closest_Dcenters = 0.80      #proportion of vertiport demand that will come from the closest distribution centers:
+Number_of_Dcenters_per_vertiport = 5    #amount of distribution centers that are considered closest
+timesteps = 3600                        #amount of time in which flights are distributed
+Percentage_known_flights = 0.70         #percentage of all flights that are revealed at 00:00:00
 
 
 """

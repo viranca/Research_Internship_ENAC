@@ -1,7 +1,10 @@
 
 
 
-
+#init file
+    #1. Input the independent variable settings
+    #2. Define the constants
+    #3. Import the python files
 #Reveal time
     #1. Part of the flights (60%) is known at 00:00:00
     #1. Function of departure time (10-15 minutes before departure)
@@ -18,11 +21,7 @@
     #1. Needs to be destined in constrained airpsace
     #2. Needs to be destined not in range of Dcenter
     #3. Choose random
-#init file
-    #1. Input the independent variable settings
-    #2. Define the constants
-    #3. Import the python files
-    #4. 
+
 
 
 

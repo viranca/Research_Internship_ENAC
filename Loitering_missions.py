@@ -34,6 +34,7 @@ loiter_area_side = 1500 #meter: square 500 by 500 meter
 
 flightintention_df = pd.read_csv('Initial_flight_intention.csv')
 
+
 def dist(x1, y1, x2 , y2):
     dist = ((x1 - x2)**2 + (y1 - y2)**2) ** 0.5
     return dist
