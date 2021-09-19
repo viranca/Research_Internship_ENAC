@@ -44,7 +44,7 @@ Percentage_emergency_flights = 0.03     #percentage of the flights, that are not
 #input loitering
 negative_time_margin = 120              #seconds before departure from when the loiter missions start
 positive_time_margin = 720              #seconds after departure until when the loiter missions last (since the arrival time is unknown)
-loiter_area_side = 1500                 #meter: square 500 by 500 meter
+loiter_area_side = 500                  #meter: square 500 by 500 meter
 #number_of_loitering_missions = 5       #(taken from list)
 
 
