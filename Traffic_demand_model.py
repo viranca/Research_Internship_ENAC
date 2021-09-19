@@ -16,13 +16,17 @@
     #1. 3 Levels and a 4th for emergency flights 
     #   food local deliveries more important
     #   loitering more important
-    #2. Equal proportion
+    #   Emergency = 4
+    #   Loitering = 3
+    #   Vertirport to Vertiport = 2
+    #   Dcenter to Vertiport = 1
+    
 #loitering:
     #1. Needs to be destined in constrained airpsace
     #2. Needs to be destined not in range of Dcenter
     #3. Choose random
 
-
+#tree.query[1]?
 
 
 

@@ -3,6 +3,8 @@ import pandas as pd
 import re
 import numpy as np
 from random import randrange
+from shapely.geometry import Polygon, Point
+import random
 
 """
 Loitering mission pseudocode:
@@ -25,19 +27,91 @@ Loitering mission pseudocode:
 """
 
 #input
-selected_flight_labels = [6118,44, 21]
 negative_time_margin = 120 #seconds
 positive_time_margin = 720 #seconds
 loiter_area_side = 1500 #meter: square 500 by 500 meter
-
-
+selected_flight_labels = [12 ,44, 21]
+number_of_loitering_missions = 5
 
 flightintention_df = pd.read_csv('Initial_flight_intention.csv')
-
+Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
+#Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
 
 def dist(x1, y1, x2 , y2):
     dist = ((x1 - x2)**2 + (y1 - y2)**2) ** 0.5
     return dist
+
+#converting the constrained airspace csv to the right crs:
+constrained_airspace_df = pd.read_csv("constrained_airspace.csv")
+Corner_list = []
+j = 0
+x_loc = []
+y_loc = []
+for corner in constrained_airspace_df:
+    if j == 114:
+        corner = "602136.759781778 5345414.06896959"
+    corner = corner[:]
+    corner = corner.split(' ')
+    corners = [float(i) for i in corner]
+    Corner_list.append(corners)  
+    x_loc.append(float(corner[0]))
+    y_loc.append(float(corner[1]))
+    j += 1  
+df = pd.DataFrame(
+    {'x': x_loc,
+     'y': y_loc,})      
+gdf = geopandas.GeoDataFrame(
+    constrained_airspace_df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
+gdf.to_crs(crs = 'EPSG:4326', inplace = True)
+Corner_list = []
+for index, row in gdf.iterrows():
+    Corner_list.append((list(row.geometry.coords)[0]))
+
+#create contstrained airspace Polygon
+constrained_airspace_polygon = Polygon(Corner_list)
+
+#Transform string locations in flightintention to floats:
+sending_nodes = []
+recieving_nodes = []
+for index, row in flightintention_df.iterrows():
+    sending_nodes.append(row[4])
+    recieving_nodes.append(row[5])
+sending_nodes = list(set(sending_nodes))
+recieving_nodes = list(set(recieving_nodes))
+sending_nodes_float = []
+for i in sending_nodes:
+    sending_nodes_float.append(re.findall("\d+\.\d+",i))
+recieving_nodes_float = []
+for i in recieving_nodes:
+    recieving_nodes_float.append(re.findall("\d+\.\d+",i))   
+#print(sending_nodes_float, recieving_nodes_float)
+sending_nodes_float_x = []
+sending_nodes_float_y = []
+for i in sending_nodes_float:
+    sending_nodes_float_x.append(i[0])
+    sending_nodes_float_y.append(i[1])
+recieving_nodes_float_x = []
+recieving_nodes_float_y = []
+for i in recieving_nodes_float:
+    recieving_nodes_float_x.append(i[0])
+    recieving_nodes_float_y.append(i[1])
+
+
+list_of_potential_loiter = []
+for destination in range(len(recieving_nodes_float_x)):
+    #print(destination)
+    x = float(recieving_nodes_float_x[destination])
+    y = float(recieving_nodes_float_y[destination])
+    for index, row in Distribution_centers_df.iterrows():
+        x_d = row['x']
+        y_d = row['y']
+        distance = dist(x, y, x_d, y_d)*111111
+        if distance >= loiter_area_side/2:
+            if constrained_airspace_polygon.contains(Point(x,y)):
+                #print("true")
+                list_of_potential_loiter.append(destination)
+list_of_potential_loiter = list(dict.fromkeys(list_of_potential_loiter))
+selected_flight_labels = random.sample(list_of_potential_loiter, number_of_loitering_missions)
 
 
 #retrieve flight info
@@ -132,7 +206,7 @@ for loiter_mission in loiter_missions:
                     to_be_removed_arriving.append(flight)
                     to_be_removed.append(index)
                     
-
+#Replace the conflicting locations with new locations.
 flightintention_loiter_df = flightintention_df.drop(to_be_removed, axis = 0)
 for index, row in flightintention_df.iterrows():
     flightintention_df.iat[index, 4] = '(' + str(flightintention_df.iloc[index, 4])[1:-1].replace("'", "") + ')'

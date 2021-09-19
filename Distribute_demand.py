@@ -3,7 +3,7 @@ import geopandas
 import numpy as np
 from statistics import mean
 import math
-
+#from numpy import choice
 
 ##load distribution centers and vertiport locations + average hourly demand
 Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
@@ -29,12 +29,12 @@ Label, x_location, y_location, Municipal_demand, relative_vport_size,
 #rogue aircraft (1%, 3%, 5%, 8%, 10%) #this will be added manually after
 
 ##Fixed variables:
-Percentage_Dcenters = 0.85              #proportion of vertiport demand that will come from distribution centers:
-Percentage_closest_Dcenters = 0.80      #proportion of vertiport demand that will come from the closest distribution centers:
+timesteps = 360                         #amount of time in which flights are distributed
+Percentage_Dcenters = 0.80              #proportion of vertiport demand that will come from distribution centers
+Percentage_closest_Dcenters = 0.80      #proportion of vertiport demand that will come from the closest distribution centers
 Number_of_Dcenters_per_vertiport = 5    #amount of distribution centers that are considered closest
-timesteps = 3600                        #amount of time in which flights are distributed
 Percentage_known_flights = 0.70         #percentage of all flights that are revealed at 00:00:00
-
+Percentage_emergency_flights = 0.03     #percentage of the flights, that are not revealed at the start, that are revealed 1 minute in advance instead of 10 minutes
 
 """
 ##Method pseudo code:
@@ -131,6 +131,7 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
     schedule_from_v_total = []
     schedule_from_D_total = []
     aircraft_id = 0
+    emergency = 0
     for recieving_vertiport in range(len(priority_list_vertiports)):
         #Retrieve municipal demand
         Total_demand = Vertiports_df.iloc[recieving_vertiport]['demand']
@@ -161,7 +162,7 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                     flight.append(label_recieving_vertiport)
                     flight.append(label_sending_vertiport)
                     flight.append(timestep_index)
-                    #schedule_from_v.append(flight)
+                    schedule_from_v.append(flight)
                     #flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][0])
                     #flight.append(list(Vertiports_df.iloc[label_sending_vertiport].geometry.coords)[0][1])
                     #flight.append(list(Vertiports_df.iloc[label_recieving_vertiport].geometry.coords)[0][0])
@@ -197,15 +198,35 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
         flight_row_v = []
         for flight in schedule_from_v:
             flight_row = []
-            #append time of recieving flight plan: 00:00:00
-            flight_row.append("00:00:00")
+            
+            known_at_start = np.random.choice([True, False], 1, p = [Percentage_known_flights, (1-Percentage_known_flights)])
+            if known_at_start:
+                #append time of recieving flight plan: 00:00:00
+                flight_row.append("00:00:00")
+            else:
+                #append reveal time (600 seconds for normal flights and 60 seconds for emergency flights):
+                emergency = np.random.choice([True, False], 1, p = [Percentage_emergency_flights, (1-Percentage_emergency_flights)])
+                if emergency:
+                    revealtime = 60
+                else:
+                    revealtime = 600
+                time_in_seconds = max(0, (flight[2] - revealtime))
+                whole_minutes = math.floor(time_in_seconds/60)   #make this round down
+                whole_minutes = str(whole_minutes)
+                if len(str(whole_minutes)) == 1:
+                    whole_minutes = "0" + str(whole_minutes)
+                seconds_left = time_in_seconds - int(whole_minutes)*60
+                if len(str(seconds_left)) == 1:
+                    seconds_left = "0" + str(seconds_left)            
+                flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))
             
             #append aircraft ID:
             flight_row.append(aircraft_id)
             aircraft_id += 1
             
             #append aircraft type:
-            flight_row.append("M600")
+            drone_type = np.random.choice(["Type 1", "Type 2", "Type 3"], 1, p =  [0.333, 0.333, 0.334])
+            flight_row.append(drone_type[0])
             
             #append flight departure time
             time_in_seconds = flight[2]
@@ -242,32 +263,47 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                 flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
             
             #add priority level (1 for now)
-            flight_row.append(1)
+            if emergency:
+                priority = 4
+            else: 
+                priority = 2
+            flight_row.append(priority)
+            
             flight_row.append(time_in_seconds)
             flight_row_v.append(flight_row)
     
         flight_row_D = []
         port_selector = 0
         for flight in schedule_from_D:
-            
             flight_row = []
-            #append time of recieving flight plan: 00:00:00
-            flight_row.append("00:00:00")
-            time_in_seconds = (flight[2] - 60)
-            whole_minutes = math.floor(time_in_seconds/60)   #make this round down
-            whole_minutes = str(whole_minutes)
-            if len(str(whole_minutes)) == 1:
-                whole_minutes = "0" + str(whole_minutes)
-            seconds_left = time_in_seconds - int(whole_minutes)*60
-            if len(str(seconds_left)) == 1:
-                seconds_left = "0" + str(seconds_left)            
-            flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))            
+
+            known_at_start = np.random.choice([True, False], 1, p = [Percentage_known_flights, (1-Percentage_known_flights)])
+            if known_at_start:
+                #append time of recieving flight plan: 00:00:00
+                flight_row.append("00:00:00")
+            else:
+                #append reveal time (600 seconds for normal flights and 60 seconds for emergency flights):
+                emergency = np.random.choice([True, False], 1, p =  [Percentage_emergency_flights, (1-Percentage_emergency_flights)])
+                if emergency:
+                    revealtime = 60
+                else:
+                    revealtime = 600
+                time_in_seconds = max(0, (flight[2] - revealtime))
+                whole_minutes = math.floor(time_in_seconds/60)   #make this round down
+                whole_minutes = str(whole_minutes)
+                if len(str(whole_minutes)) == 1:
+                    whole_minutes = "0" + str(whole_minutes)
+                seconds_left = time_in_seconds - int(whole_minutes)*60
+                if len(str(seconds_left)) == 1:
+                    seconds_left = "0" + str(seconds_left)            
+                flight_row.append("00:" + str(whole_minutes) + ":"  + str(seconds_left))            
             #append aircraft ID:
             flight_row.append(aircraft_id)
             aircraft_id += 1
             
             #append aircraft type:
-            flight_row.append("M600")
+            drone_type = np.random.choice(["Type 1", "Type 2", "Type 3"], 1,  p = [0.333, 0.333, 0.334])
+            flight_row.append(drone_type[0])
             
             #append flight departure time
             time_in_seconds = flight[2]
@@ -303,7 +339,12 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
                 flight_row.append('(' + str(x_loc_recieving) + ', ' + str(y_loc_recieving) + ')')
             
             #add priority level (1 for now)
-            flight_row.append(1)
+            if emergency:
+                priority = 4
+            else: 
+                priority = 1
+            flight_row.append(priority)
+            
             flight_row.append(time_in_seconds)
             flight_row_D.append(flight_row)
   
@@ -329,9 +370,6 @@ def Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distri
 
 priority_list_vertiports = Create_vertiport_priority(Vertiports_df)
 Schedule = Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df)
-
-
-
 
 
 
