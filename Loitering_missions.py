@@ -5,6 +5,7 @@ import numpy as np
 from random import randrange
 from shapely.geometry import Polygon, Point
 import random
+import math
 
 """
 Loitering mission pseudocode:
@@ -32,7 +33,7 @@ positive_time_margin = 720 #seconds
 loiter_area_side = 1500 #meter: square 500 by 500 meter
 number_of_loitering_missions = 5
 
-def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions):
+def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions, sample):
     flightintention_df = pd.read_csv('Initial_flight_intention.csv')
     Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
     #Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
@@ -42,6 +43,34 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
         return dist
     
     #converting the constrained airspace csv to the right crs:
+    constrained_airspace_df = geopandas.read_file("updated_constrained_airspace.gpkg")
+    #print(list(constrained_airspace_df.geometry.exterior[0].coords))
+    Corner_list = []
+    x_loc = []
+    y_loc = []
+    for corner in list(constrained_airspace_df.geometry.exterior[0].coords):
+        corner = str(corner)
+        corner = corner[1:-1]
+        corner = corner.split(', ')
+        corners = [float(i) for i in corner]
+        Corner_list.append(corners)  
+        x_loc.append(float(corner[0]))
+        y_loc.append(float(corner[1]))
+    df = pd.DataFrame(
+        {'x': x_loc,
+         'y': y_loc,})      
+    gdf = geopandas.GeoDataFrame(
+        df, geometry=geopandas.points_from_xy(df.x, df.y), crs = 'EPSG:32633')
+    gdf.to_crs(crs = 'EPSG:4326', inplace = True)
+    Corner_list = []
+    for index, row in gdf.iterrows():
+        Corner_list.append((list(row.geometry.coords)[0]))
+    
+    #create contstrained airspace Polygon
+    constrained_airspace_polygon = Polygon(Corner_list)    
+
+    """
+    This was for the old constrained airspace:
     constrained_airspace_df = pd.read_csv("constrained_airspace.csv")
     Corner_list = []
     j = 0
@@ -69,6 +98,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
     
     #create contstrained airspace Polygon
     constrained_airspace_polygon = Polygon(Corner_list)
+    """
     
     #Transform string locations in flightintention to floats:
     sending_nodes = []
@@ -112,7 +142,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
                     list_of_potential_loiter.append(destination)
     list_of_potential_loiter = list(dict.fromkeys(list_of_potential_loiter))
     selected_flight_labels = random.sample(list_of_potential_loiter, number_of_loitering_missions)
-    
+    #append to flight intention start time, duration, polygon
     
     #retrieve flight info
     selected_flights = []
@@ -219,10 +249,23 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
             random_loc_selector = randrange(0, len(flightintention_loiter_df))
             new_loc = '(' + str(flightintention_loiter_df.iloc[random_loc_selector, 5])[1:-1].replace("'", "") + ')'
             flightintention_df.iat[index, 5] = new_loc
-    
-    
+            
+        #append flight departure time
+        time_in_seconds = int(row[3])
+        whole_minutes = math.floor(time_in_seconds/60)   
+        whole_minutes = str(whole_minutes)
+        if len(str(whole_minutes)) == 1:
+            whole_minutes = "0" + str(whole_minutes)
+        seconds_left = time_in_seconds - int(whole_minutes)*60
+        if len(str(seconds_left)) == 1:
+            seconds_left = "0" + str(seconds_left)   
+        flight_timestamp = "00:" + str(whole_minutes) + ":"  + str(seconds_left)    
+        flightintention_df.iat[index, 3] = flight_timestamp    
+
+        
+        
     #print(flightintention_df)
-    filename = 'Final_flight_intentions/' + 'Flight_intention_' + traffic_level + '_' + str(Percentage_Dcenters*100) + '_' + str(number_of_loitering_missions) +'.csv'
+    filename = 'Final_flight_intentions/' + 'Flight_intention_' + traffic_level + '_' + str(Percentage_Dcenters*100) + '_' + str(number_of_loitering_missions) + str(sample) + '.csv'
     flightintention_df.to_csv(filename, header = False, index = False)
 
 

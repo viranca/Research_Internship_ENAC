@@ -5,13 +5,17 @@ from Distribute_demand import Distribute_demand
 from Loitering_missions import Loitering_missions
 
 
-list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
-list_of_Dcenter_proportions = [0.40, 0.50, 0.60, 0.70, 0.80]
-list_of_loitering_missions_number = [0, 3, 6, 9, 12]
+#list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
+#list_of_Dcenter_proportions = [0.40, 0.50, 0.60, 0.70, 0.80]
+list_of_loitering_missions_number = [5, 6, 7, 8, 9]                     #set them accordingly for the demandlevels in this order: ['very_low', 'low', 'medium', 'high', 'ultra']
+list_of_demands = ['very_low']
+list_of_Dcenter_proportions = [0.80]
+
 
 
 ##Fixed variables distribute demand:
-timesteps = 3600                            #amount of seconds in which flights are distributed
+Number_of_samples = 9                       #amount of samples that are created with the exact same parameters
+timesteps = 360                             #amount of seconds in which flights are distributed
 #Percentage_Dcenters = 0.80                 #proportion of vertiport demand that will come from distribution centers (taken from list)
 Percentage_closest_Dcenters = 0.80          #proportion of vertiport demand that will come from the closest distribution centers
 Number_of_Dcenters_per_vertiport = 5        #amount of distribution centers that are considered closest
@@ -26,18 +30,19 @@ loiter_area_side = 500                      #meter: square 500 by 500 meter
 #number_of_loitering_missions = 5           #(taken from list)
 
 
-for demandlevel in list_of_demands:
-    traffic_level = demandlevel
+
+for demandlevel in range(len(list_of_demands)):
+    traffic_level = list_of_demands[demandlevel]
+    number_of_loitering_missions = list_of_loitering_missions_number[demandlevel]
     for proportion in list_of_Dcenter_proportions:
         Percentage_Dcenters = proportion
-        for number in list_of_loitering_missions_number:
-            number_of_loitering_missions = number
-            
+        
+        for sample in range(len(Number_of_samples)):
             Create_distributioncenter_layer()
             Create_vertiport_layer(traffic_level)
             Node_coupling()
             Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, Number_of_Dcenters_per_vertiport, Percentage_known_flights, Percentage_emergency_flights)
-            Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions)
+            Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions, sample)
 
 
 
@@ -92,7 +97,13 @@ for demandlevel in list_of_demands:
     #3. Choose random
 
 
-
+#add new center_points 
+#fix loitering N per Traffic level
+#append to flight intention start time, duration, polygon
+#repeat nine times 
+#Document, more comments/report
+#Slides M2 meeting: dont explain all the variabels. But more inro the demand level literature Aprrox: 3/4 slides
+#Report 
 
 
 

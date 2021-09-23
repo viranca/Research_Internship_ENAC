@@ -28,6 +28,10 @@ def Node_coupling():
     Distribution_centers_longlat = gdf.to_crs(crs = 'EPSG:4326', inplace = True)
     
     #constrained airspace polygon
+    constrained_airspace_df = geopandas.read_file("updated_constrained_airspace.gpkg")
+    constrained_airspace_polygon = constrained_airspace_df.geometry[0]
+    """
+    This was for the old constrained airspace:
     constrained_airspace_df = pd.read_csv("constrained_airspace.csv")
     Corner_list = []
     j = 0
@@ -42,7 +46,7 @@ def Node_coupling():
     #print(Corner_list)    
     constrained_airspace_polygon = Polygon(Corner_list)
     #constrained_airspace_polygon_list = list(constrained_airspace_polygon)
-    
+    """
     
     #retrieve midway points:
     nodes_df = geopandas.read_file("center_points.gpkg")
