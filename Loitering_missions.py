@@ -142,7 +142,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
                     list_of_potential_loiter.append(destination)
     list_of_potential_loiter = list(dict.fromkeys(list_of_potential_loiter))
     selected_flight_labels = random.sample(list_of_potential_loiter, number_of_loitering_missions)
-    #append to flight intention start time, duration, polygon
+
     
     #retrieve flight info
     selected_flights = []
@@ -176,7 +176,21 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
                 distance = dist(x_send, y_send, x_rec, y_rec)
                 flight.append(distance * 111111)
                 selected_flights.append(flight)
-    #print(selected_flights)
+                
+                #add loitering to flight intention     start time, duration, polygon                
+                x_min = x_rec - ((loiter_area_side/2)/111111)
+                x_max = x_rec + ((loiter_area_side/2)/111111)
+                y_min = y_rec - ((loiter_area_side/2)/111111)
+                y_max = y_rec + ((loiter_area_side/2)/111111)  
+                start_time = row[3]
+                flightintention_df.iat[index, 7] = start_time
+                flightintention_df.iat[index, 8] = positive_time_margin
+                flightintention_df.iat[index, 9] = x_min
+                flightintention_df.iat[index, 10] = x_max
+                flightintention_df.iat[index, 11] = y_min
+                flightintention_df.iat[index, 12] = y_max
+                #flightintention_df.iat[index, 9] = '(' + str(x_min) + ', ' + str(y_min) + '), ' + '(' + str(x_min) + ', ' + str(y_max) + '), ' + '(' + str(x_max) + ', ' + str(y_min) + '), ' + '(' + str(x_max) + ', ' + str(y_max) + ')' 
+    #print('selected_flights', selected_flights)
     #line_number, label, timestamp, x_send, y_send, x_rec, y_rec, distance
     
     #print(flightintention_df.columns)
@@ -201,7 +215,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
         loiter_mission.append(y_min)
         loiter_mission.append(y_max)   
         loiter_missions.append(loiter_mission)
-    #print(loiter_missions)
+    #print('loiter_missions', loiter_missions)
     #start_time, end_time, x_min, x_max, y_min, y_max
     
     
@@ -214,6 +228,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
             if row[3] >= loiter_mission[0] and row[3] <= float(loiter_mission[1]):
                 if float(row[4][0]) >= loiter_mission[2] and float(row[4][0]) <= loiter_mission[3]:
                     if float(row[4][1]) >= loiter_mission[4] and float(row[4][1]) <= loiter_mission[5]:
+                        
                         to_be_removed_departing_index.append(index)
                         flight = []
                         for datapoint in row:
@@ -265,7 +280,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
         
         
     #print(flightintention_df)
-    filename = 'Final_flight_intentions/' + 'Flight_intention_' + traffic_level + '_' + str(Percentage_Dcenters*100) + '_' + str(number_of_loitering_missions) + str(sample) + '.csv'
+    filename = 'Final_flight_intentions/' + 'Flight_intention_' + traffic_level + '_' + str(Percentage_Dcenters*100) + '_' + str(number_of_loitering_missions) + '_' + str(sample) + '.csv'
     flightintention_df.to_csv(filename, header = False, index = False)
 
 

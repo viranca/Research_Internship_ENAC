@@ -269,6 +269,12 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 flight_row.append(priority)
                 
                 flight_row.append(time_in_seconds)
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')                      
                 flight_row_v.append(flight_row)
         
             flight_row_D = []
@@ -345,6 +351,12 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 flight_row.append(priority)
                 
                 flight_row.append(time_in_seconds)
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')
+                flight_row.append('')      
                 flight_row_D.append(flight_row)
       
         

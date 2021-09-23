@@ -5,17 +5,13 @@ from Distribute_demand import Distribute_demand
 from Loitering_missions import Loitering_missions
 
 
-#list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
-#list_of_Dcenter_proportions = [0.40, 0.50, 0.60, 0.70, 0.80]
+list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
+list_of_Dcenter_proportions = [0.40, 0.50, 0.60, 0.70, 0.80]
 list_of_loitering_missions_number = [5, 6, 7, 8, 9]                     #set them accordingly for the demandlevels in this order: ['very_low', 'low', 'medium', 'high', 'ultra']
-list_of_demands = ['very_low']
-list_of_Dcenter_proportions = [0.80]
-
-
 
 ##Fixed variables distribute demand:
 Number_of_samples = 9                       #amount of samples that are created with the exact same parameters
-timesteps = 360                             #amount of seconds in which flights are distributed
+timesteps = 3600                            #amount of seconds in which flights are distributed
 #Percentage_Dcenters = 0.80                 #proportion of vertiport demand that will come from distribution centers (taken from list)
 Percentage_closest_Dcenters = 0.80          #proportion of vertiport demand that will come from the closest distribution centers
 Number_of_Dcenters_per_vertiport = 5        #amount of distribution centers that are considered closest
@@ -37,7 +33,7 @@ for demandlevel in range(len(list_of_demands)):
     for proportion in list_of_Dcenter_proportions:
         Percentage_Dcenters = proportion
         
-        for sample in range(len(Number_of_samples)):
+        for sample in range(Number_of_samples):
             Create_distributioncenter_layer()
             Create_vertiport_layer(traffic_level)
             Node_coupling()
