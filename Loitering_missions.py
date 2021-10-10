@@ -30,7 +30,7 @@ Loitering mission pseudocode:
 #input
 negative_time_margin = 120 #seconds
 positive_time_margin = 720 #seconds
-loiter_area_side = 1500 #meter: square 500 by 500 meter
+loiter_area_side = 500 #meter: square 500 by 500 meter
 number_of_loitering_missions = 5
 
 def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions, sample):

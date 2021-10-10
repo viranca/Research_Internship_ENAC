@@ -5,7 +5,7 @@ from Distribute_demand import Distribute_demand
 from Loitering_missions import Loitering_missions
 
 
-list_of_demands = ['very_low', 'low', 'medium', 'high', 'ultra']
+list_of_demands = ['low', 'medium', 'high', 'ultra']
 list_of_Dcenter_proportions = [0.40, 0.50, 0.60, 0.70, 0.80]
 list_of_loitering_missions_number = [5, 6, 7, 8, 9]                     #set them accordingly for the demandlevels in this order: ['very_low', 'low', 'medium', 'high', 'ultra']
 
