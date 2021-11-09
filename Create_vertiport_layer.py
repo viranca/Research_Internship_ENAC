@@ -150,17 +150,19 @@ def Create_vertiport_layer(traffic_level):
          
          'Relative_size': Relative_size})
     
-    df.to_csv('Vertiport_locations.csv')
+    return df
+    
+    # df.to_csv('Vertiport_locations.csv')
     
     
-    gdf = geopandas.GeoDataFrame(
-        df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
+    # gdf = geopandas.GeoDataFrame(
+    #     df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
     
     
-    #print(gdf.head())
+    # #print(gdf.head())
     
     
-    gdf.to_file("Vertiports.gpkg", layer='Vertiports', driver="GPKG")
+    # gdf.to_file("Vertiports.gpkg", layer='Vertiports', driver="GPKG")
     
 
 

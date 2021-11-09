@@ -47,16 +47,18 @@ def Create_distributioncenter_layer():
     48.26583834811154, 16.435988148803034
     48.117808345212715, 16.318936215162697
     
-    df.to_csv('Distribution_centers_locations.csv')
+    return df
     
-    gdf = geopandas.GeoDataFrame(
-        df, geometry=geopandas.points_from_xy(df.Longitude, df.Latitude))
+    # df.to_csv('Distribution_centers_locations.csv')
+    
+    # gdf = geopandas.GeoDataFrame(
+    #     df, geometry=geopandas.points_from_xy(df.Longitude, df.Latitude))
     
     
-    #print(gdf)
+    # #print(gdf)
     
     
-    gdf.to_file("Distribution_centers2.gpkg", layer='Distribution_centers2', driver="GPKG")
+    # gdf.to_file("Distribution_centers2.gpkg", layer='Distribution_centers2', driver="GPKG")
     
 
 

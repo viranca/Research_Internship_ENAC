@@ -35,13 +35,18 @@ Based on this create the flight schedule in the requested format.
         
 """
     
-def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, Number_of_Dcenters_per_vertiport, Percentage_known_flights, Percentage_emergency_flights):
+def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, 
+                      Number_of_Dcenters_per_vertiport, Percentage_known_flights, 
+                      Percentage_emergency_flights, ac_types,
+                      Distribution_centers_df, Vertiports_df):
     ##load distribution centers and vertiport locations + average hourly demand
-    Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
-    Vertiports_df = pd.read_csv('Vertiport_locations.csv')
-    
-    Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
-    Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
+    #Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
+    #Vertiports_df = pd.read_csv('Vertiport_locations.csv')
+    try:
+        Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
+        Vertiports_df = Vertiports_df.drop(['Unnamed: 0'], axis = 1)
+    except:
+        print('Not needed.')
     
     """
     Distribution centers Dataframe format:
@@ -224,7 +229,7 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 aircraft_id += 1
                 
                 #append aircraft type:
-                drone_type = np.random.choice(["Type 1", "Type 2", "Type 3"], 1, p =  [0.333, 0.333, 0.334])
+                drone_type = np.random.choice(ac_types, 1, p =  [1/len(ac_types)]*len(ac_types))
                 flight_row.append(drone_type[0])
                 
                 #append flight departure time
@@ -265,7 +270,7 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 if emergency:
                     priority = 4
                 else: 
-                    priority = 2
+                    priority = np.random.randint(1,4)
                 flight_row.append(priority)
                 
                 flight_row.append(time_in_seconds)
@@ -307,7 +312,7 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 aircraft_id += 1
                 
                 #append aircraft type:
-                drone_type = np.random.choice(["Type 1", "Type 2", "Type 3"], 1,  p = [0.333, 0.333, 0.334])
+                drone_type = np.random.choice(ac_types, 1, p =  [1/len(ac_types)]*len(ac_types))
                 flight_row.append(drone_type[0])
                 
                 #append flight departure time
@@ -347,7 +352,7 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
                 if emergency:
                     priority = 4
                 else: 
-                    priority = 1
+                    priority = np.random.randint(1,4)
                 flight_row.append(priority)
                 
                 flight_row.append(time_in_seconds)
@@ -370,7 +375,7 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
         flight_schedule_df = pd.DataFrame.from_records(flight_schedule_unsorted)
         flight_schedule_df = flight_schedule_df.sort_values(by=[flight_schedule_df.columns[7]])
         flight_schedule_df = flight_schedule_df.drop(columns = [ flight_schedule_df.columns[7]])
-        flight_schedule_df.to_csv('Initial_flight_intention.csv', header = False, index = False)
+        #flight_schedule_df.to_csv('Initial_flight_intention.csv', header = False, index = False)
         
         #df = pd.DataFrame(schedule_from_D_total) 
         #df.to_csv('schedule_from_D_total.csv', header = False) 
@@ -381,6 +386,6 @@ def Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenter
     
     priority_list_vertiports = Create_vertiport_priority(Vertiports_df)
     Schedule = Make_poisson_tableu_schedule(priority_list_vertiports, Vertiports_df, Distribution_centers_df)
-    
+    return Schedule
     
 

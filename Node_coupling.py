@@ -6,7 +6,7 @@ from shapely.geometry import Polygon, Point
 from shapely.ops import cascaded_union
 
 
-def Node_coupling():
+def Node_coupling(Distribution_centers_df, Vertiports_df):
     #retrieve midway points:
     nodes_df = gpd.read_file("center_points.gpkg")
     nodes = []
@@ -15,8 +15,8 @@ def Node_coupling():
     
     
     ##load distribution centers and vertiport locations + average hourly demand
-    Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
-    Vertiports_df = pd.read_csv('Vertiport_locations.csv')
+    # Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
+    # Vertiports_df = pd.read_csv('Vertiport_locations.csv')
     df = Vertiports_df
     gdf = geopandas.GeoDataFrame(
         df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
@@ -104,7 +104,7 @@ def Node_coupling():
     Distribution_centers_df['node_y_send_2'] = Dcenter_nodelist_y_send_2
     Distribution_centers_df['node_x_send_3'] = Dcenter_nodelist_x_send_3
     Distribution_centers_df['node_y_send_3'] = Dcenter_nodelist_y_send_3
-    Distribution_centers_df.to_csv('Distribution_centers_locations.csv')
+    #Distribution_centers_df.to_csv('Distribution_centers_locations.csv')
     
     
     #append nodes to vertiports:
@@ -142,7 +142,7 @@ def Node_coupling():
     Vertiports_df['node_y_send'] = vertiport_nodelist_y_send
     Vertiports_df['node_x_recieve'] = vertiport_nodelist_x_recieve
     Vertiports_df['node_y_recieve'] = vertiport_nodelist_y_recieve
-    Vertiports_df.to_csv('Vertiport_locations.csv')
+    #Vertiports_df.to_csv('Vertiport_locations.csv')
     
     #Create used nodes geopackage for sending and recieving ports seperately
     sending_nodes_float_x = []
@@ -166,19 +166,21 @@ def Node_coupling():
         recieving_nodes_float_x.append(vertiport_nodelist_x_recieve[i])
         recieving_nodes_float_y.append(vertiport_nodelist_y_recieve[i])
     
-    df = pd.DataFrame(
-        {'x_send': sending_nodes_float_x,
-         'y_send': sending_nodes_float_y})
-    gdf = geopandas.GeoDataFrame(
-        df, geometry=geopandas.points_from_xy(df.x_send, df.y_send), crs = 'EPSG:4326')
-    gdf.to_crs(crs = 'EPSG:32633', inplace = True)
-    gdf.to_file("Sending_nodes.gpkg", layer='Sending_nodes', driver="GPKG")
+    return Distribution_centers_df, Vertiports_df
     
-    df = pd.DataFrame(
-        {'x_rec': recieving_nodes_float_x,
-         'y_rec': recieving_nodes_float_y})
-    gdf = geopandas.GeoDataFrame(
-        df, geometry=geopandas.points_from_xy(df.x_rec, df.y_rec), crs = 'EPSG:4326')
-    gdf.to_crs(crs = 'EPSG:32633', inplace = True)
-    gdf.to_file("Recieving_nodes.gpkg", layer='Recieving_nodes', driver="GPKG")
+    # df = pd.DataFrame(
+    #     {'x_send': sending_nodes_float_x,
+    #      'y_send': sending_nodes_float_y})
+    # gdf = geopandas.GeoDataFrame(
+    #     df, geometry=geopandas.points_from_xy(df.x_send, df.y_send), crs = 'EPSG:4326')
+    # gdf.to_crs(crs = 'EPSG:32633', inplace = True)
+    # gdf.to_file("Sending_nodes.gpkg", layer='Sending_nodes', driver="GPKG")
+    
+    # df = pd.DataFrame(
+    #     {'x_rec': recieving_nodes_float_x,
+    #      'y_rec': recieving_nodes_float_y})
+    # gdf = geopandas.GeoDataFrame(
+    #     df, geometry=geopandas.points_from_xy(df.x_rec, df.y_rec), crs = 'EPSG:4326')
+    # gdf.to_crs(crs = 'EPSG:32633', inplace = True)
+    # gdf.to_file("Recieving_nodes.gpkg", layer='Recieving_nodes', driver="GPKG")
 

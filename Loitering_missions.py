@@ -33,9 +33,11 @@ positive_time_margin = 720 #seconds
 loiter_area_side = 500 #meter: square 500 by 500 meter
 number_of_loitering_missions = 5
 
-def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions, sample):
-    flightintention_df = pd.read_csv('Initial_flight_intention.csv')
-    Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
+def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, 
+                       positive_time_margin, loiter_area_side, number_of_loitering_missions, 
+                       sample, flightintention_df, Distribution_centers_df):
+    #flightintention_df = pd.read_csv('Initial_flight_intention.csv')
+    #Distribution_centers_df = pd.read_csv('Distribution_centers_locations.csv')
     #Distribution_centers_df = Distribution_centers_df.drop(['Unnamed: 0', 'Latitude', 'Longitude'], axis = 1)
     
     def dist(x1, y1, x2 , y2):
@@ -183,12 +185,12 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
                 y_min = y_rec - ((loiter_area_side/2)/111111)
                 y_max = y_rec + ((loiter_area_side/2)/111111)  
                 start_time = row[3]
-                flightintention_df.iat[index, 7] = start_time
-                flightintention_df.iat[index, 8] = positive_time_margin
-                flightintention_df.iat[index, 9] = x_min
-                flightintention_df.iat[index, 10] = x_max
-                flightintention_df.iat[index, 11] = y_min
-                flightintention_df.iat[index, 12] = y_max
+                #flightintention_df.iat[index, 7] = start_time
+                flightintention_df.iat[index, 7] = positive_time_margin + np.random.randint(-120,120)
+                flightintention_df.iat[index, 8] = x_min
+                flightintention_df.iat[index, 9] = x_max
+                flightintention_df.iat[index, 10] = y_min
+                flightintention_df.iat[index, 11] = y_max
                 #flightintention_df.iat[index, 9] = '(' + str(x_min) + ', ' + str(y_min) + '), ' + '(' + str(x_min) + ', ' + str(y_max) + '), ' + '(' + str(x_max) + ', ' + str(y_min) + '), ' + '(' + str(x_max) + ', ' + str(y_max) + ')' 
     #print('selected_flights', selected_flights)
     #line_number, label, timestamp, x_send, y_send, x_rec, y_rec, distance
@@ -282,6 +284,7 @@ def Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin,
     #print(flightintention_df)
     filename = 'Final_flight_intentions/' + 'Flight_intention_' + traffic_level + '_' + str(Percentage_Dcenters*100) + '_' + str(number_of_loitering_missions) + '_' + str(sample) + '.csv'
     flightintention_df.to_csv(filename, header = False, index = False)
+    print(f'File saved: {filename}')
 
 
 

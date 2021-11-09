@@ -3,6 +3,7 @@ from Create_vertiport_layer import Create_vertiport_layer
 from Node_coupling import Node_coupling
 from Distribute_demand import Distribute_demand
 from Loitering_missions import Loitering_missions
+from multiprocessing import Pool as ThreadPool
 
 
 list_of_demands = ['low', 'medium', 'high', 'ultra']
@@ -15,30 +16,76 @@ timesteps = 3600                            #amount of seconds in which flights 
 #Percentage_Dcenters = 0.80                 #proportion of vertiport demand that will come from distribution centers (taken from list)
 Percentage_closest_Dcenters = 0.80          #proportion of vertiport demand that will come from the closest distribution centers
 Number_of_Dcenters_per_vertiport = 5        #amount of distribution centers that are considered closest
-Percentage_known_flights = 0.70             #percentage of all flights that are revealed at 00:00:00
-Percentage_emergency_flights = 0.03         #percentage of the flights, that are not revealed at the start, that are revealed 1 minute in advance instead of 10 minutes
-
+Percentage_known_flights = 0.80             #percentage of all flights that are revealed at 00:00:00
+Percentage_emergency_flights = 0.002         #percentage of the flights, that are not revealed at the start, that are revealed 1 minute in advance instead of 10 minutes
+ac_types= ['MP20', 'MP30']
 
 #input loitering
 negative_time_margin = 120                  #seconds before departure from when the loiter missions start
-positive_time_margin = 720                  #seconds after departure until when the loiter missions last (since the arrival time is unknown)
+positive_time_margin = 600                  #seconds after departure until when the loiter missions last (since the arrival time is unknown)
 loiter_area_side = 500                      #meter: square 500 by 500 meter
 #number_of_loitering_missions = 5           #(taken from list)
 
-
-
+input_arr = []
 for demandlevel in range(len(list_of_demands)):
+    for proportion in list_of_Dcenter_proportions:
+        for sample in range(Number_of_samples):
+            input_arr.append([demandlevel,proportion,sample])
+
+def calculate_intention(variables):
+    demandlevel,proportion,sample = variables
     traffic_level = list_of_demands[demandlevel]
     number_of_loitering_missions = list_of_loitering_missions_number[demandlevel]
-    for proportion in list_of_Dcenter_proportions:
-        Percentage_Dcenters = proportion
+    Percentage_Dcenters = proportion
+    
+    Distribution_centers_locations = Create_distributioncenter_layer()
+    
+    Vertiport_locations = Create_vertiport_layer(traffic_level)
+    
+    Distribution_centers_df, Vertiports_df = Node_coupling(Distribution_centers_locations, 
+                                                           Vertiport_locations)
+    
+    flight_schedule_df = Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, 
+                      Number_of_Dcenters_per_vertiport, Percentage_known_flights, 
+                      Percentage_emergency_flights, ac_types,
+                      Distribution_centers_df, Vertiports_df)
+    
+    Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, 
+                       positive_time_margin, loiter_area_side, number_of_loitering_missions, 
+                       sample, flight_schedule_df, Distribution_centers_df)
+    return
+
+def main():
+    pool = ThreadPool(12)
+    results = pool.map(calculate_intention, input_arr)
+    pool.close()
+
+if __name__ == '__main__':
+    main()
+
+# for demandlevel in range(len(list_of_demands)):
+#     traffic_level = list_of_demands[demandlevel]
+#     number_of_loitering_missions = list_of_loitering_missions_number[demandlevel]
+#     for proportion in list_of_Dcenter_proportions:
+#         Percentage_Dcenters = proportion
         
-        for sample in range(Number_of_samples):
-            Create_distributioncenter_layer()
-            Create_vertiport_layer(traffic_level)
-            Node_coupling()
-            Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, Number_of_Dcenters_per_vertiport, Percentage_known_flights, Percentage_emergency_flights)
-            Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, positive_time_margin, loiter_area_side, number_of_loitering_missions, sample)
+#         for sample in range(Number_of_samples):
+            
+#             Distribution_centers_locations = Create_distributioncenter_layer()
+            
+#             Vertiport_locations = Create_vertiport_layer(traffic_level)
+            
+#             Distribution_centers_df, Vertiports_df = Node_coupling(Distribution_centers_locations, 
+#                                                                    Vertiport_locations)
+            
+#             flight_schedule_df = Distribute_demand(timesteps, Percentage_Dcenters, Percentage_closest_Dcenters, 
+#                               Number_of_Dcenters_per_vertiport, Percentage_known_flights, 
+#                               Percentage_emergency_flights, ac_types,
+#                               Distribution_centers_df, Vertiports_df)
+            
+#             Loitering_missions(traffic_level, Percentage_Dcenters, negative_time_margin, 
+#                                positive_time_margin, loiter_area_side, number_of_loitering_missions, 
+#                                sample, flight_schedule_df, Distribution_centers_df)
 
 
 
