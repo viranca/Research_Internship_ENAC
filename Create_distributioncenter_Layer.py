@@ -55,7 +55,7 @@ def Create_distributioncenter_layer():
     #     df, geometry=geopandas.points_from_xy(df.Longitude, df.Latitude))
     
     
-    # #print(gdf)
+    # # #print(gdf)
     
     
     # gdf.to_file("Distribution_centers2.gpkg", layer='Distribution_centers2', driver="GPKG")

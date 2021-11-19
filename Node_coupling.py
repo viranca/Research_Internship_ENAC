@@ -183,4 +183,3 @@ def Node_coupling(Distribution_centers_df, Vertiports_df):
     #     df, geometry=geopandas.points_from_xy(df.x_rec, df.y_rec), crs = 'EPSG:4326')
     # gdf.to_crs(crs = 'EPSG:32633', inplace = True)
     # gdf.to_file("Recieving_nodes.gpkg", layer='Recieving_nodes', driver="GPKG")
-

@@ -156,10 +156,10 @@ def Create_vertiport_layer(traffic_level):
     
     
     # gdf = geopandas.GeoDataFrame(
-    #     df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
+    #      df, geometry=geopandas.points_from_xy(df.x, df.y, df.demand), crs = 'EPSG:32633')
     
     
-    # #print(gdf.head())
+    # # #print(gdf.head())
     
     
     # gdf.to_file("Vertiports.gpkg", layer='Vertiports', driver="GPKG")
